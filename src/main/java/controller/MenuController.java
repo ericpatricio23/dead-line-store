@@ -1,9 +1,10 @@
 package controller;
 
-import java.util.List;
-import java.util.Scanner;
+import java.time.LocalDate;
+import java.util.*;
 
 import model.Produto;
+import model.Venda;
 import repository.ProdutoRepository;
 import service.VendaService;
 
@@ -26,7 +27,7 @@ public class MenuController {
 
             System.out.print("Escolha: ");
             opcao = scanner.nextInt();
-            scanner.nextLine(); // consome quebra de linha
+            scanner.nextLine();
 
             switch (opcao) {
                 case 1 -> cadastrarProduto();
@@ -39,9 +40,9 @@ public class MenuController {
         }
     }
 
-    // ---------------------- Métodos ----------------------
+    //  Métodos:
 
-    private void cadastrarProduto() {
+    public void cadastrarProduto() {
         System.out.println("\n--- CADASTRAR PRODUTO ---");
 
         System.out.print("Nome: ");
@@ -52,7 +53,7 @@ public class MenuController {
 
         System.out.print("Estoque: ");
         int estoque = scanner.nextInt();
-        scanner.nextLine(); // consome quebra de linha
+        scanner.nextLine();
 
         Produto produto = new Produto();
         produto.setNome(nome);
@@ -64,7 +65,7 @@ public class MenuController {
         System.out.println("Produto cadastrado com sucesso!");
     }
 
-    private void listarProdutos() {
+    public void listarProdutos() {
         List<Produto> produtos = produtoRepo.listarProdutos();
 
         if (produtos.isEmpty()) {
@@ -78,7 +79,7 @@ public class MenuController {
                     p.getId(), p.getNome(), p.getPreco(), p.getEstoque());
         }
     }
-    private void registrarVenda() {
+    public void registrarVenda() {
 
         int vendaId = vendaService.criarVenda();
 
@@ -99,20 +100,40 @@ public class MenuController {
                 continue;
             }
 
+            if (produto.getEstoque() == 0) {
+                System.out.println("Produto sem estoque.");
+                continue;
+            }
+
+            if (quantidade > produto.getEstoque()) {
+                System.out.println("Estoque insuficiente.");
+                continue;
+            }
+
             vendaService.adicionarItem(
                     vendaId,
                     produtoId,
                     quantidade,
                     produto.getPreco()
             );
+
+            System.out.println("Item adicionado à venda.");
         }
 
         double total = vendaService.calcularTotalVenda(vendaId);
 
+        if (total == 0) {
+            System.out.println("Venda cancelada.");
+            return;
+        }
+
+        vendaService.finalizarVenda(vendaId);
+
+
         System.out.println("Venda finalizada.");
         System.out.println("Total: R$ " + total);
     }
-    private void listarVendas() {
+    public void listarVendas() {
 
         var vendas = vendaService.listarVendas();
 
@@ -121,13 +142,36 @@ public class MenuController {
             return;
         }
 
-        System.out.println("\n--- HISTÓRICO DE VENDAS ---");
+        Map<String, List<Venda>> vendasPorDia = new HashMap<>();
 
         for (var venda : vendas) {
-            System.out.println("Venda ID: " + venda.getId());
-            System.out.println("Data: " + venda.getData());
-            System.out.println("Total: R$ " + venda.getValorTotal());
-            System.out.println("-------------------------");
+
+            String data = venda.getData().substring(0, 10);
+
+            vendasPorDia
+                    .computeIfAbsent(data, k -> new ArrayList<>())
+                    .add(venda);
+        }
+
+        System.out.println("\n--- HISTÓRICO DE VENDAS ---");
+
+        for (var entry : vendasPorDia.entrySet()) {
+
+            String data = entry.getKey();
+            List<Venda> vendasDoDia = entry.getValue();
+
+            System.out.println("\n=== VENDAS DO DIA " + data + " ===");
+
+            double totalDia = 0;
+
+            for (var venda : vendasDoDia) {
+                System.out.println("Venda ID: " + venda.getId()
+                        + " | Total: R$ " + venda.getValorTotal());
+
+                totalDia += venda.getValorTotal();
+            }
+
+            System.out.println("Total do dia: R$ " + totalDia);
         }
     }
 
