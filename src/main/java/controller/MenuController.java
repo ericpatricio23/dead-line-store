@@ -23,6 +23,7 @@ public class MenuController {
             System.out.println("2 - Listar Produtos");
             System.out.println("3 - Registrar Venda");
             System.out.println("4 - Listar Vendas");
+            System.out.println("5 - Reabastecer Estoque");
             System.out.println("0 - Sair");
 
             System.out.print("Escolha: ");
@@ -34,6 +35,7 @@ public class MenuController {
                 case 2 -> listarProdutos();
                 case 3 -> registrarVenda();
                 case 4 -> listarVendas();
+                case 5 -> reabastecerEstoque();
                 case 0 -> System.out.println("Sistema encerrado.");
                 default -> System.out.println("Opção inválida.");
             }
@@ -173,6 +175,26 @@ public class MenuController {
 
             System.out.println("Total do dia: R$ " + totalDia);
         }
+    }
+    public void reabastecerEstoque() {
+
+        System.out.println("\n--- REABASTECER ESTOQUE ---");
+
+        System.out.print("ID do produto: ");
+        int id = scanner.nextInt();
+
+        System.out.print("Quantidade a adicionar: ");
+        int quantidade = scanner.nextInt();
+        scanner.nextLine();
+
+        var produto = produtoRepo.buscarProdutoPorId(id);
+
+        if (produto == null) {
+            System.out.println("Produto não encontrado.");
+            return;
+        }
+
+        produtoRepo.somarEstoque(id, quantidade);
     }
 
     }

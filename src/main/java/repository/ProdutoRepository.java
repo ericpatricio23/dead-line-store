@@ -82,7 +82,7 @@ public class ProdutoRepository {
 
         return produto;
     }
-
+    
     public void atualizarEstoque(int produtoId, int quantidade) {
 
         String sql = "UPDATE produtos SET estoque = estoque - ? WHERE id = ?";
@@ -100,6 +100,24 @@ public class ProdutoRepository {
         }
     }
 
+    public void somarEstoque(int produtoId, int quantidade) {
+
+        String sql = "UPDATE produtos SET estoque = estoque + ? WHERE id = ?";
+
+        try (Connection conn = DatabaseConnection.connect();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, quantidade);
+            stmt.setInt(2, produtoId);
+
+            stmt.executeUpdate();
+
+        } catch (SQLException e) {
+            System.out.println("Erro ao somar estoque: " + e.getMessage());
+        }
+    }
+
+
     public void deletarProduto(int id) {
 
         String sql = "DELETE FROM produtos WHERE id = ?";
@@ -115,5 +133,4 @@ public class ProdutoRepository {
             System.out.println("Erro ao deletar produto: " + e.getMessage());
         }
     }
-
 }
