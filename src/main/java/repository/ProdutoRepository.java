@@ -118,7 +118,7 @@ public class ProdutoRepository {
     }
 
 
-    public void deletarProduto(int id) {
+    public boolean deletarProduto(int id) {
 
         String sql = "DELETE FROM produtos WHERE id = ?";
 
@@ -127,10 +127,34 @@ public class ProdutoRepository {
 
             stmt.setInt(1, id);
 
-            stmt.executeUpdate();
+            int linhasAfetadas = stmt.executeUpdate();
+
+            return linhasAfetadas > 0;
 
         } catch (SQLException e) {
             System.out.println("Erro ao deletar produto: " + e.getMessage());
+            return false;
         }
+
+    }
+    public boolean produtoTemVenda(int produtoId) {
+
+        String sql = "SELECT COUNT(*) FROM item_venda WHERE produto_id = ?";
+
+        try (Connection conn = DatabaseConnection.connect();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, produtoId);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+
+        } catch (SQLException e) {
+            System.out.println("Erro ao verificar vendas: " + e.getMessage());
+        }
+
+        return false;
     }
 }

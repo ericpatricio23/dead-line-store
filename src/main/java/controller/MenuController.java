@@ -24,6 +24,7 @@ public class MenuController {
             System.out.println("3 - Registrar Venda");
             System.out.println("4 - Listar Vendas");
             System.out.println("5 - Reabastecer Estoque");
+            System.out.println("6 - Deletar Produto");
             System.out.println("0 - Sair");
 
             System.out.print("Escolha: ");
@@ -36,6 +37,7 @@ public class MenuController {
                 case 3 -> registrarVenda();
                 case 4 -> listarVendas();
                 case 5 -> reabastecerEstoque();
+                case 6 -> deletarProduto();
                 case 0 -> System.out.println("Sistema encerrado.");
                 default -> System.out.println("Opção inválida.");
             }
@@ -195,6 +197,45 @@ public class MenuController {
         }
 
         produtoRepo.somarEstoque(id, quantidade);
+    }
+    public void deletarProduto() {
+
+        System.out.println("\n--- DELETAR PRODUTO ---");
+
+        System.out.print("ID do produto: ");
+        int id = scanner.nextInt();
+        scanner.nextLine();
+
+        var produto = produtoRepo.buscarProdutoPorId(id);
+
+        if (produto == null) {
+            System.out.println("Produto não encontrado.");
+            return;
+        }
+
+        // 🔒 PROTEÇÃO IMPORTANTE
+        if (produtoRepo.produtoTemVenda(id)) {
+            System.out.println("Não é possível deletar um produto que já foi vendido.");
+            return;
+        }
+
+        System.out.println("Produto: " + produto.getNome());
+
+        System.out.print("Tem certeza que deseja deletar? (s/n): ");
+        String confirmacao = scanner.nextLine();
+
+        if (!confirmacao.equalsIgnoreCase("s")) {
+            System.out.println("Operação cancelada.");
+            return;
+        }
+
+        boolean sucesso = produtoRepo.deletarProduto(id);
+
+        if (sucesso) {
+            System.out.println("Produto deletado com sucesso!");
+        } else {
+            System.out.println("Erro ao deletar produto.");
+        }
     }
 
     }
